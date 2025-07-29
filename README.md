@@ -79,7 +79,7 @@ Nous accueillons avec joie les contributions :
 ### Pour contribuer :
 
 ```bash
-git clone https://github.com/ton-utilisateur/legacychain.git
+git clone https://github.com/svcrobotics/legacychain.git
 cd legacychain
 bin/setup
 ```
