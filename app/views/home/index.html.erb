@@ -1,2 +1,60 @@
 <h1>Bienvenue sur LegacyChain</h1>
-<p>Connectez votre wallet pour continuer.</p>
+<p>Connectez votre wallet Ethereum (testnet Sepolia) pour continuer.</p>
+
+<button id="connectButton">🔐 Se connecter avec MetaMask</button>
+<p id="walletAddress"></p>
+
+<button id="balanceButton" style="display:none;">💰 Afficher mon solde Sepolia</button>
+<p id="balance"></p>
+
+<script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const connectButton = document.getElementById("connectButton");
+    const balanceButton = document.getElementById("balanceButton");
+    const walletAddress = document.getElementById("walletAddress");
+    const balanceDisplay = document.getElementById("balance");
+
+    let currentAddress = "";
+
+    connectButton.addEventListener("click", async () => {
+      if (typeof window.ethereum !== 'undefined') {
+        try {
+          const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+          currentAddress = accounts[0];
+          walletAddress.textContent = `✅ Adresse connectée : ${currentAddress}`;
+          balanceButton.style.display = 'inline-block';
+        } catch (err) {
+          walletAddress.textContent = "❌ Connexion refusée.";
+        }
+      } else {
+        walletAddress.textContent = "⚠️ MetaMask n'est pas installé.";
+      }
+    });
+
+    balanceButton.addEventListener("click", async () => {
+      if (currentAddress === "") {
+        alert("Connectez d'abord votre wallet.");
+        return;
+      }
+
+      const apiKey = "T7TBWAJUSQZIZG5A3FT67JU9IRIA913VSY"; // remplacez par votre vraie clé API Sepolia
+      const url = `https://api-sepolia.etherscan.io/api?module=account&action=balance&address=${currentAddress}&tag=latest&apikey=${apiKey}`;
+
+      try {
+        const resp = await fetch(url);
+        const data = await resp.json();
+
+        if (data.status === "1") {
+          const ethBalance = Number(data.result) / 1e18;
+          balanceDisplay.textContent = `💳 Solde Sepolia : ${ethBalance} ETH`;
+        } else {
+          balanceDisplay.textContent = "❌ Impossible de récupérer le solde.";
+        }
+      } catch (error) {
+        balanceDisplay.textContent = "❌ Erreur lors de la récupération du solde.";
+      }
+    });
+  });
+</script>
