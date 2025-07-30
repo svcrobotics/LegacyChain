@@ -1,0 +1,46 @@
+<h1 class="text-3xl font-bold mb-4">👛 Tableau de bord LegacyChain</h1>
+
+<div class="p-4 bg-white rounded shadow-md">
+  <p class="text-gray-800 mb-2" id="walletAddress">Adresse connectée : ...</p>
+  
+  <h2 class="text-xl font-semibold mb-2">💳 Soldes</h2>
+  <p id="sepoliaBalance" class="text-gray-700">Sepolia : ...</p>
+  <p id="mainnetBalance" class="text-gray-700">Mainnet : ...</p>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", async function () {
+    const params = new URLSearchParams(window.location.search);
+    const address = params.get("address");
+    document.getElementById("walletAddress").textContent = `✅ Adresse connectée : ${address}`;
+
+    // Sepolia Balance via Etherscan API
+    const sepoliaApiKey = "T7TBWAJUSQZIZG5A3FT67JU9IRIA913VSY";
+    const sepoliaUrl = `https://api-sepolia.etherscan.io/api?module=account&action=balance&address=${address}&tag=latest&apikey=${sepoliaApiKey}`;
+    
+    try {
+      const sepoliaResp = await fetch(sepoliaUrl);
+      const sepoliaData = await sepoliaResp.json();
+      if (sepoliaData.status === "1") {
+        const balanceSepolia = Number(sepoliaData.result) / 1e18;
+        document.getElementById("sepoliaBalance").textContent = `Sepolia : ${balanceSepolia} ETH`;
+      } else {
+        document.getElementById("sepoliaBalance").textContent = "Sepolia : ❌ Erreur de récupération.";
+      }
+    } catch (err) {
+      document.getElementById("sepoliaBalance").textContent = "Sepolia : ❌ Erreur.";
+    }
+
+    // Mainnet Balance via Alchemy
+    const alchemyProvider = new ethers.providers.JsonRpcProvider("https://eth-mainnet.g.alchemy.com/v2/dpto4kpk6GC3rBIJakWcV");
+    try {
+      const balanceMainnet = await alchemyProvider.getBalance(address);
+      const ethMain = ethers.utils.formatEther(balanceMainnet);
+      document.getElementById("mainnetBalance").textContent = `Mainnet : ${ethMain} ETH`;
+    } catch (error) {
+      console.error(error);
+      document.getElementById("mainnetBalance").textContent = "Mainnet : ❌ Erreur de récupération.";
+    }
+  });
+</script>
