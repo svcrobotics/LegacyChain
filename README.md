@@ -16,8 +16,8 @@ Dans un monde où les actifs numériques se démocratisent, leur transmission en
 
 | Étape                                      | Description                                         | Statut     |
 | ------------------------------------------ | --------------------------------------------------- | ---------- |
-| 1. Authentification avec wallet (MetaMask) | Connexion de l’utilisateur à la plateforme          | ⏳ À faire |
-| 2. Visualisation des actifs                | Affichage en temps réel des avoirs du wallet        | ⏳ À faire |
+| 1. Authentification avec wallet (MetaMask) | Connexion de l’utilisateur à la plateforme          | ✅ Fait    |
+| 2. Visualisation des actifs                | Affichage en temps réel des avoirs du wallet        | ✅ Fait    |
 | 3. Création du testament numérique         | Interface de répartition des actifs entre héritiers | ⏳ À faire |
 | 4. Rôle du notaire                         | Vérification et validation légale du testament      | ⏳ À faire |
 | 5. Exécution du smart contract             | Déclenchement du transfert après décès              | ⏳ À faire |
