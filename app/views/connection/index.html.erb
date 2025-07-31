@@ -1,0 +1,53 @@
+<!-- app/views/home/index.html.erb -->
+<div class="max-w-2xl mx-auto p-6 mt-12 bg-white rounded-lg shadow-md">
+  <h1 class="text-3xl font-bold mb-4 text-center">Bienvenue sur LegacyChain</h1>
+  
+  <p class="text-gray-700 mb-4 text-justify">
+    <strong>LegacyChain</strong> est une plateforme sécurisée qui permet d'organiser la transmission de vos actifs numériques (cryptomonnaies, tokens) à vos héritiers en cas de décès. Elle repose sur des smart contracts validés par un notaire et ne stocke jamais vos fonds.
+  </p>
+
+  <p class="text-gray-700 mb-6">
+    Pour commencer, vous avez besoin d’un <strong>wallet Ethereum</strong> (comme MetaMask). Si vous n’en avez pas encore :
+  </p>
+
+  <div class="mb-6 text-center">
+    <a href="https://metamask.io/download/" target="_blank" class="inline-block bg-orange-500 text-white font-semibold px-4 py-2 rounded hover:bg-orange-600">
+      ➕ Installer MetaMask
+    </a>
+  </div>
+
+  <hr class="mb-6">
+
+  <div class="text-center">
+    <p class="mb-4 font-semibold text-lg">Déjà équipé ? Connectez votre wallet pour continuer :</p>
+    <button id="connectButton" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
+      🔐 Se connecter avec MetaMask
+    </button>
+    <p id="walletAddress" class="mt-4 text-gray-600"></p>
+  </div>
+</div>
+
+<!-- JS -->
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const connectButton = document.getElementById("connectButton");
+    const walletAddress = document.getElementById("walletAddress");
+
+    connectButton.addEventListener("click", async () => {
+      if (typeof window.ethereum !== 'undefined') {
+        try {
+          const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+          const address = accounts[0];
+          walletAddress.textContent = `✅ Adresse connectée : ${address}`;
+          // Rediriger vers le dashboard
+          window.location.href = `/dashboard?address=${address}`;
+        } catch (err) {
+          walletAddress.textContent = "❌ Connexion refusée.";
+        }
+      } else {
+        walletAddress.textContent = "⚠️ MetaMask n'est pas installé.";
+      }
+    });
+  });
+</script>
+

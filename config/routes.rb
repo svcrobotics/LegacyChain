@@ -1,8 +1,12 @@
 Rails.application.routes.draw do
   
-  root "home#index"
+  root "connection#index"
 
-  get '/dashboard', to: 'dashboard#index'
+  get '/home', to: 'home#index'
+  get '/dashboard', to: 'dashboard#index', as: :dashboard
+  get '/testament', to: 'testament#index', as: :testament
+  get '/heirs', to: 'heirs#index', as: :heirs
+  get '/notaire', to: 'notaire#index', as: :notaire
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
