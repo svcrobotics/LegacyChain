@@ -1,107 +1,28 @@
-<div class="min-h-screen bg-gradient-to-b from-gray-100 via-white to-gray-100 font-sans flex flex-col items-center py-12">
-  <div class="w-full max-w-5xl bg-white rounded-xl shadow-lg p-8">
-    <h1 class="text-4xl font-extrabold text-indigo-700 text-center mb-8">👛 Mon Portefeuille Ethereum</h1>
+<!-- Dashboard portefeuille Ethereum sans graphique -->
+<div class="min-h-screen bg-gray-100 text-gray-900 font-sans flex flex-col items-center py-12 px-4">
+  <div class="w-full max-w-5xl bg-white rounded-2xl shadow-xl p-8">
+    <h1 class="text-4xl font-extrabold text-violet-600 text-center mb-8">👛 Dashboard</h1>
 
     <!-- Adresse -->
     <div class="mb-6 text-center">
-      <h2 class="text-sm uppercase text-gray-500">Adresse connectée</h2>
-      <p id="wallet" class="text-lg font-mono text-indigo-600 break-all">...</p>
+      <p id="wallet" class="text-lg font-bold break-all text-green-600">...</p>
     </div>
 
-    <!-- Soldes -->
+    <!-- Solde Mainnet -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <!-- Sepolia -->
-      <div class="bg-indigo-50 p-6 rounded-lg shadow border border-indigo-200">
-        <h3 class="text-sm text-indigo-700 uppercase font-bold mb-2">Solde Sepolia</h3>
-        <p id="sepoliaBalance" class="text-2xl font-bold text-indigo-900">...</p>
-      </div>
-      <div class="mt-12 grid grid-cols-1 md:grid-cols-2 gap-12">
-        <div>
-          <h3 class="text-xl font-semibold text-gray-700 mb-4 text-center">🧪 Évolution Sepolia (7 jours)</h3>
-          <canvas id="sepoliaChart" class="w-full bg-white rounded-lg shadow p-4"></canvas>
-        </div>
-      </div>
-
-      <!-- Mainnet -->
-      <div class="bg-green-50 p-6 rounded-lg shadow border border-green-200">
-        <h3 class="text-sm text-green-700 uppercase font-bold mb-2">Solde Mainnet</h3>
-        <p id="mainnetBalance" class="text-2xl font-bold text-green-900">...</p>
-        <p id="mainnetChange" class="text-sm text-gray-500 mt-1">...</p>
-      </div>
-      <div class="mt-12 grid grid-cols-1 md:grid-cols-2 gap-12">
-        <div>
-          <h3 class="text-xl font-semibold text-gray-700 mb-4 text-center">📈 Évolution Mainnet (7 jours)</h3>
-          <canvas id="mainnetChart" class="w-full bg-white rounded-lg shadow p-4"></canvas>
-        </div>
+      <div class="bg-gray-50 p-6 rounded-lg shadow border border-green-200 w-full md:col-span-2">
+        <h3 class="text-sm text-green-600 uppercase font-bold mb-2">Solde Mainnet</h3>
+        <p id="mainnetBalance" class="text-2xl font-bold text-gray-900">...</p>
+        <p id="mainnetChange" class="text-sm text-gray-600 mt-1">...</p>
       </div>
     </div>
   </div>
 </div>
 
 <!-- Scripts -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
 <script>
   const address = new URLSearchParams(window.location.search).get("address");
-
-  function getLast7Days() {
-    const today = new Date();
-    return [...Array(7)].map((_, i) => {
-      const d = new Date(today);
-      d.setDate(today.getDate() - (6 - i));
-      return d.toISOString().split("T")[0];
-    });
-  }
-
-  function processTransactions(txs, address) {
-    const balances = {};
-    let running = 0;
-    txs.forEach(tx => {
-      const date = new Date(tx.timeStamp * 1000).toISOString().split('T')[0];
-      const value = Number(tx.value) / 1e18;
-      const isIncoming = tx.to.toLowerCase() === address.toLowerCase();
-      running += isIncoming ? value : -value;
-      balances[date] = running;
-    });
-
-    const days = getLast7Days();
-    let last = 0;
-    const data = days.map(day => {
-      if (balances[day] !== undefined) last = balances[day];
-      return last.toFixed(6);
-    });
-
-    return { labels: days, data };
-  }
-
-  async function loadChart(canvasId, label, color, txs) {
-    const { labels, data } = processTransactions(txs, address);
-    const ctx = document.getElementById(canvasId).getContext("2d");
-    new Chart(ctx, {
-      type: "line",
-      data: {
-        labels,
-        datasets: [{
-          label,
-          data,
-          borderColor: color,
-          backgroundColor: color + "33",
-          fill: true,
-          tension: 0.3
-        }]
-      },
-      options: {
-        responsive: true,
-        scales: {
-          y: {
-            ticks: {
-              callback: val => val + " ETH"
-            }
-          }
-        }
-      }
-    });
-  }
 
   document.addEventListener("DOMContentLoaded", async () => {
     document.getElementById("wallet").textContent = address;
@@ -112,74 +33,59 @@
       const priceData = await priceResp.json();
       ethToEur = priceData.ethereum.eur;
     } catch {
-      console.warn("⚠️ Impossible de récupérer le taux ETH -> EUR.");
+      console.warn("⚠️ Impossible de récupérer le taux ETH → EUR.");
     }
 
-    // Sepolia Balance
-    try {
-      const res = await fetch(`https://api-sepolia.etherscan.io/api?module=account&action=balance&address=${address}&tag=latest&apikey=T7TBWAJUSQZIZG5A3FT67JU9IRIA913VSY`);
-      const json = await res.json();
-      const ethBalance = Number(json.result) / 1e18;
-      document.getElementById("sepoliaBalance").textContent = `${ethBalance.toFixed(4)} ETH (${(ethBalance * ethToEur).toFixed(2)} €)`;
-    } catch {
-      document.getElementById("sepoliaBalance").textContent = "❌ Erreur Sepolia";
-    }
-
-    // Mainnet Balance + variation %
     try {
       const provider = new ethers.providers.JsonRpcProvider("https://eth-mainnet.g.alchemy.com/v2/dpto4kpk6GC3rBIJakWcV");
       const balance = await provider.getBalance(address);
       const ethMainnet = Number(ethers.utils.formatEther(balance));
       const eurMainnet = ethMainnet * ethToEur;
-
-      // Affichage du solde
       document.getElementById("mainnetBalance").textContent = `${ethMainnet.toFixed(4)} ETH (${eurMainnet.toFixed(2)} €)`;
 
-      // Récupération des transactions
       const txResp = await fetch(`https://api.etherscan.io/api?module=account&action=txlist&address=${address}&startblock=0&endblock=99999999&sort=asc&apikey=T7TBWAJUSQZIZG5A3FT67JU9IRIA913VSY`);
       const txData = await txResp.json();
 
       if (txData.status === "1") {
-        const { data: balanceHistory } = processTransactions(txData.result, address);
-        const oldEth = Number(balanceHistory[balanceHistory.length - 2]); // veille
-        const newEth = ethMainnet;
-        const diffEth = newEth - oldEth;
-        const diffEur = diffEth * ethToEur;
+        const incomingTx = txData.result.find(tx => tx.to.toLowerCase() === address.toLowerCase());
+        if (!incomingTx) {
+          document.getElementById("mainnetChange").textContent = "❌ Aucune transaction entrante trouvée";
+          return;
+        }
 
-        const percent = oldEth > 0 ? (diffEth / oldEth) * 100 : 0;
+        const timestamp = Number(incomingTx.timeStamp);
+        const date = new Date(timestamp * 1000);
+        const dateStr = `${String(date.getDate()).padStart(2, '0')}-${String(date.getMonth()+1).padStart(2, '0')}-${date.getFullYear()}`;
+
+        let historicEur = 0;
+        try {
+          const priceResp = await fetch(`https://api.coingecko.com/api/v3/coins/ethereum/history?date=${dateStr}&localization=false`);
+          const priceData = await priceResp.json();
+          historicEur = priceData?.market_data?.current_price?.eur;
+        } catch (err) {
+          console.warn("⚠️ Erreur prix historique ETH :", err);
+        }
+
+        if (!historicEur) {
+          document.getElementById("mainnetChange").textContent = "⚠️ Prix ETH historique indisponible";
+          return;
+        }
+
+        const receivedEth = Number(incomingTx.value) / 1e18;
+        const valueAtPurchase = receivedEth * historicEur;
+        const valueNow = receivedEth * ethToEur;
+        const diffEur = valueNow - valueAtPurchase;
+        const percent = (diffEur / valueAtPurchase) * 100;
+
         const sign = diffEur >= 0 ? "+" : "−";
         const arrow = diffEur > 0 ? "⬆️" : diffEur < 0 ? "⬇️" : "";
 
-        if (oldEth === 0) {
-          document.getElementById("mainnetChange").textContent = `⬆️ Nouveau solde : ${eurMainnet.toFixed(2)} €`;
-        } else {
-          document.getElementById("mainnetChange").textContent =
-            `${arrow} ${sign}${Math.abs(diffEur).toFixed(2)} € (${sign}${Math.abs(percent).toFixed(2)}%)`;
-        }
+        document.getElementById("mainnetChange").textContent =
+          `${arrow} ${sign}${Math.abs(diffEur).toFixed(2)} € (${sign}${Math.abs(percent).toFixed(2)}%) depuis l'achat le ${dateStr}`;
       }
-
-    } catch {
+    } catch (err) {
+      console.error("❌ Erreur Mainnet:", err);
       document.getElementById("mainnetBalance").textContent = "❌ Erreur Mainnet";
-    }
-
-    // Graph Sepolia
-    try {
-      const txs = await fetch(`https://api-sepolia.etherscan.io/api?module=account&action=txlist&address=${address}&startblock=0&endblock=99999999&sort=asc&apikey=T7TBWAJUSQZIZG5A3FT67JU9IRIA913VSY`).then(r => r.json());
-      if (txs.status === "1") {
-        loadChart("sepoliaChart", "Évolution Sepolia (ETH)", "#6366F1", txs.result);
-      }
-    } catch {
-      console.error("Erreur graphique Sepolia");
-    }
-
-    // Graph Mainnet
-    try {
-      const txs = await fetch(`https://api.etherscan.io/api?module=account&action=txlist&address=${address}&startblock=0&endblock=99999999&sort=asc&apikey=T7TBWAJUSQZIZG5A3FT67JU9IRIA913VSY`).then(r => r.json());
-      if (txs.status === "1") {
-        loadChart("mainnetChart", "Évolution Mainnet (ETH)", "#10B981", txs.result);
-      }
-    } catch {
-      console.error("Erreur graphique Mainnet");
     }
   });
 </script>
